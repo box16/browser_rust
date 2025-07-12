@@ -1,4 +1,5 @@
 use alloc::{
+    borrow::ToOwned,
     string::{String, ToString},
     vec::Vec,
 };
@@ -14,20 +15,25 @@ pub struct URL {
 
 impl URL {
     pub fn new(url: String) -> Self {
-        let host = url.trim_start_matches("http://");
-        let host_parts: Vec<&str> = host.splitn(2, ":").collect();
-        let port = if host_parts.len() == 2 {
-            host_parts[1].to_string()
-        } else {
-            "80".to_string()
-        };
+        let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
+        let (host, _other) = Self::pattern_match(other, "/", "".to_owned());
+        let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
 
         Self {
-            scheme: "http".to_string(),
-            host: "example.com".to_string(),
-            port: port,
+            scheme,
+            host,
+            port,
             path: "".to_string(),
             search_part: "".to_string(),
+        }
+    }
+
+    fn pattern_match(sentence: String, pattern: &str, default: String) -> (String, String) {
+        let parsed: Vec<&str> = sentence.splitn(2, &pattern).collect();
+        if parsed.len() == 2 {
+            (parsed[0].to_string(), parsed[1].to_string())
+        } else {
+            (parsed[0].to_string(), default)
         }
     }
 }
