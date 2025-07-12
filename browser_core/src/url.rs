@@ -18,14 +18,15 @@ impl URL {
         let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
         let (host, other) = Self::pattern_match(other, "/", "".to_owned());
         let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
-        let (path, _other) = Self::pattern_match(other, "?", "".to_owned());
+        let (path, other) = Self::pattern_match(other, "?", "".to_owned());
+        let (search_part, _fragment) = Self::pattern_match(other, "#", "".to_owned());
 
         Self {
             scheme,
             host,
             port,
             path,
-            search_part: "".to_string(),
+            search_part,
         }
     }
 
@@ -91,6 +92,19 @@ mod tests {
             port: "80".to_string(),
             path: "fizz/buzz/fizzbuzz/index.html".to_string(),
             search_part: "".to_string(),
+        };
+        assert_eq!(expected, URL::new(url));
+    }
+
+    #[test]
+    fn parse_search_part_specified_http_url() {
+        let url = "http://example.com/index.html?a=123&b=456".to_string();
+        let expected = URL {
+            scheme: "http".to_string(),
+            host: "example.com".to_string(),
+            port: "80".to_string(),
+            path: "index.html".to_string(),
+            search_part: "a=123&b=456".to_string(),
         };
         assert_eq!(expected, URL::new(url));
     }
