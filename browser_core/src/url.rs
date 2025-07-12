@@ -16,14 +16,15 @@ pub struct URL {
 impl URL {
     pub fn new(url: String) -> Self {
         let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
-        let (host, _other) = Self::pattern_match(other, "/", "".to_owned());
+        let (host, other) = Self::pattern_match(other, "/", "".to_owned());
         let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
+        let (path, _other) = Self::pattern_match(other, "?", "".to_owned());
 
         Self {
             scheme,
             host,
             port,
-            path: "".to_string(),
+            path,
             search_part: "".to_string(),
         }
     }
@@ -63,6 +64,32 @@ mod tests {
             host: "example.com".to_string(),
             port: "8080".to_string(),
             path: "".to_string(),
+            search_part: "".to_string(),
+        };
+        assert_eq!(expected, URL::new(url));
+    }
+
+    #[test]
+    fn parse_short_path_specified_http_url() {
+        let url = "http://example.com/index.html".to_string();
+        let expected = URL {
+            scheme: "http".to_string(),
+            host: "example.com".to_string(),
+            port: "80".to_string(),
+            path: "index.html".to_string(),
+            search_part: "".to_string(),
+        };
+        assert_eq!(expected, URL::new(url));
+    }
+
+    #[test]
+    fn parse_long_path_specified_http_url() {
+        let url = "http://example.com/fizz/buzz/fizzbuzz/index.html".to_string();
+        let expected = URL {
+            scheme: "http".to_string(),
+            host: "example.com".to_string(),
+            port: "80".to_string(),
+            path: "fizz/buzz/fizzbuzz/index.html".to_string(),
             search_part: "".to_string(),
         };
         assert_eq!(expected, URL::new(url));
