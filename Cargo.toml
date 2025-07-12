@@ -1,4 +1,5 @@
 cargo-features = ["edition2024"]
+workspace = { members = ["browser_core"] }
 
 [package]
 name = "browser_rust"
