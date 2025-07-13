@@ -19,13 +19,22 @@ pub enum URLError {
     Unsupported,
 }
 
+fn split(sentence: String, pattern: &str, second_default: String) -> (String, String) {
+    let parsed: Vec<&str> = sentence.splitn(2, &pattern).collect();
+    if parsed.len() == 2 {
+        (parsed[0].to_string(), parsed[1].to_string())
+    } else {
+        (parsed[0].to_string(), second_default)
+    }
+}
+
 impl URL {
     pub fn new(url: String) -> Result<Self, URLError> {
-        let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
-        let (host, other) = Self::pattern_match(other, "/", "".to_owned());
-        let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
-        let (path, other) = Self::pattern_match(other, "?", "".to_owned());
-        let (search_part, _fragment) = Self::pattern_match(other, "#", "".to_owned());
+        let (scheme, other) = split(url, "://", "".to_owned());
+        let (host, other) = split(other, "/", "".to_owned());
+        let (host, port) = split(host, ":", "80".to_owned());
+        let (path, other) = split(other, "?", "".to_owned());
+        let (search_part, _fragment) = split(other, "#", "".to_owned());
 
         if host.is_empty() {
             return Err(URLError::Invalid);
@@ -40,15 +49,6 @@ impl URL {
             path,
             search_part,
         })
-    }
-
-    fn pattern_match(sentence: String, pattern: &str, default: String) -> (String, String) {
-        let parsed: Vec<&str> = sentence.splitn(2, &pattern).collect();
-        if parsed.len() == 2 {
-            (parsed[0].to_string(), parsed[1].to_string())
-        } else {
-            (parsed[0].to_string(), default)
-        }
     }
 }
 
