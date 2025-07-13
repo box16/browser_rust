@@ -13,8 +13,14 @@ pub struct URL {
     search_part: String,
 }
 
+#[derive(PartialEq, Debug)]
+pub enum URLError {
+    Invalid,
+    Unsupported,
+}
+
 impl URL {
-    pub fn new(url: String) -> Result<Self, String> {
+    pub fn new(url: String) -> Result<Self, URLError> {
         let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
         let (host, other) = Self::pattern_match(other, "/", "".to_owned());
         let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
@@ -30,9 +36,9 @@ impl URL {
                 search_part,
             })
         } else if host.is_empty() {
-            Err("invalid url".to_string())
+            Err(URLError::Invalid)
         } else {
-            Err("unsupported scheme".to_string())
+            Err(URLError::Unsupported)
         }
     }
 
@@ -118,21 +124,21 @@ mod tests {
     #[test]
     fn parse_unsupported_scheme_specified_url() {
         let url: String = "https://example.com".to_string();
-        let expected = Err("unsupported scheme".to_string());
+        let expected = Err(URLError::Unsupported);
         assert_eq!(expected, URL::new(url));
     }
 
     #[test]
     fn parse_empty_host_specified_url() {
         let url: String = "http://".to_string();
-        let expected = Err("invalid url".to_string());
+        let expected = Err(URLError::Invalid);
         assert_eq!(expected, URL::new(url));
     }
 
     #[test]
     fn parse_not_url() {
         let url: String = "aaabbbcc".to_string();
-        let expected = Err("invalid url".to_string());
+        let expected = Err(URLError::Invalid);
         assert_eq!(expected, URL::new(url));
     }
 }
