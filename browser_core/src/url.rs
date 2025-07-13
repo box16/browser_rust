@@ -29,10 +29,10 @@ impl URL {
                 path,
                 search_part,
             })
-        } else if scheme != "http" {
-            Err("unsupported scheme".to_string())
-        } else {
+        } else if host.is_empty() {
             Err("invalid url".to_string())
+        } else {
+            Err("unsupported scheme".to_string())
         }
     }
 
@@ -125,6 +125,13 @@ mod tests {
     #[test]
     fn parse_empty_host_specified_url() {
         let url: String = "http://".to_string();
+        let expected = Err("invalid url".to_string());
+        assert_eq!(expected, URL::new(url));
+    }
+
+    #[test]
+    fn parse_not_url() {
+        let url: String = "aaabbbcc".to_string();
         let expected = Err("invalid url".to_string());
         assert_eq!(expected, URL::new(url));
     }
