@@ -21,7 +21,7 @@ impl URL {
         let (path, other) = Self::pattern_match(other, "?", "".to_owned());
         let (search_part, _fragment) = Self::pattern_match(other, "#", "".to_owned());
 
-        if scheme == "http" {
+        if scheme == "http" && !host.is_empty() {
             Ok(Self {
                 scheme,
                 host,
@@ -29,8 +29,10 @@ impl URL {
                 path,
                 search_part,
             })
-        } else {
+        } else if scheme != "http" {
             Err("unsupported scheme".to_string())
+        } else {
+            Err("invalid url".to_string())
         }
     }
 
@@ -117,6 +119,13 @@ mod tests {
     fn parse_unsupported_scheme_specified_url() {
         let url: String = "https://example.com".to_string();
         let expected = Err("unsupported scheme".to_string());
+        assert_eq!(expected, URL::new(url));
+    }
+
+    #[test]
+    fn parse_empty_host_specified_url() {
+        let url: String = "http://".to_string();
+        let expected = Err("invalid url".to_string());
         assert_eq!(expected, URL::new(url));
     }
 }
