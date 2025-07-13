@@ -14,19 +14,23 @@ pub struct URL {
 }
 
 impl URL {
-    pub fn new(url: String) -> Self {
+    pub fn new(url: String) -> Result<Self, String> {
         let (scheme, other) = Self::pattern_match(url, "://", "".to_owned());
         let (host, other) = Self::pattern_match(other, "/", "".to_owned());
         let (host, port) = Self::pattern_match(host, ":", "80".to_owned());
         let (path, other) = Self::pattern_match(other, "?", "".to_owned());
         let (search_part, _fragment) = Self::pattern_match(other, "#", "".to_owned());
 
-        Self {
-            scheme,
-            host,
-            port,
-            path,
-            search_part,
+        if scheme == "http" {
+            Ok(Self {
+                scheme,
+                host,
+                port,
+                path,
+                search_part,
+            })
+        } else {
+            Err("unsupported scheme".to_string())
         }
     }
 
@@ -54,7 +58,7 @@ mod tests {
             path: "".to_string(),
             search_part: "".to_string(),
         };
-        assert_eq!(expected, URL::new(url));
+        assert_eq!(expected, URL::new(url).unwrap());
     }
 
     #[test]
@@ -67,7 +71,7 @@ mod tests {
             path: "".to_string(),
             search_part: "".to_string(),
         };
-        assert_eq!(expected, URL::new(url));
+        assert_eq!(expected, URL::new(url).unwrap());
     }
 
     #[test]
@@ -80,7 +84,7 @@ mod tests {
             path: "index.html".to_string(),
             search_part: "".to_string(),
         };
-        assert_eq!(expected, URL::new(url));
+        assert_eq!(expected, URL::new(url).unwrap());
     }
 
     #[test]
@@ -93,7 +97,7 @@ mod tests {
             path: "fizz/buzz/fizzbuzz/index.html".to_string(),
             search_part: "".to_string(),
         };
-        assert_eq!(expected, URL::new(url));
+        assert_eq!(expected, URL::new(url).unwrap());
     }
 
     #[test]
@@ -106,6 +110,13 @@ mod tests {
             path: "index.html".to_string(),
             search_part: "a=123&b=456".to_string(),
         };
+        assert_eq!(expected, URL::new(url).unwrap());
+    }
+
+    #[test]
+    fn parse_unsupported_scheme_specified_url() {
+        let url: String = "https://example.com".to_string();
+        let expected = Err("unsupported scheme".to_string());
         assert_eq!(expected, URL::new(url));
     }
 }
