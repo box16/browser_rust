@@ -27,19 +27,19 @@ impl URL {
         let (path, other) = Self::pattern_match(other, "?", "".to_owned());
         let (search_part, _fragment) = Self::pattern_match(other, "#", "".to_owned());
 
-        if scheme == "http" && !host.is_empty() {
-            Ok(Self {
-                scheme,
-                host,
-                port,
-                path,
-                search_part,
-            })
-        } else if host.is_empty() {
-            Err(URLError::Invalid)
-        } else {
-            Err(URLError::Unsupported)
+        if host.is_empty() {
+            return Err(URLError::Invalid);
         }
+        if scheme != "http" {
+            return Err(URLError::Unsupported);
+        }
+        Ok(Self {
+            scheme,
+            host,
+            port,
+            path,
+            search_part,
+        })
     }
 
     fn pattern_match(sentence: String, pattern: &str, default: String) -> (String, String) {
